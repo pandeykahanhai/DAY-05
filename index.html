@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Magic Awaits, My Love</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --primary:#7c3aed; /* purple */
+      --accent:#f472b6;  /* pink */
+      --glow:#a78bfa;    /* light violet */
+      --bg-star:#0b1020;
+      --text:#f8fafc;
+      --wrong:#ef4444;
+      --right:#22c55e;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: 'Cormorant Garamond', serif;
+      color:var(--text);
+      overflow:hidden;
+      background:
+        radial-gradient(1000px 400px at 50% 120%, rgba(124,58,237,.15), transparent 60%),
+        radial-gradient(800px 300px at 0% 0%, rgba(244,114,182,.12), transparent 60%),
+        radial-gradient(700px 400px at 100% 0%, rgba(80,200,255,.12), transparent 60%),
+        #0b1020;
+      background-size:cover;
+      position:relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      box-sizing: border-box;
+      flex-direction: column;
+      padding: 24px;
+    }
+
+    /* Optional custom background image (set via JS) */
+    body.custom-bg{
+      background: var(--bg-image) center/cover no-repeat fixed,
+        radial-gradient(1000px 400px at 50% 120%, rgba(124,58,237,.15), transparent 60%),
+        radial-gradient(800px 300px at 0% 0%, rgba(244,114,182,.12), transparent 60%),
+        radial-gradient(700px 400px at 100% 0%, rgba(80,200,255,.12), transparent 60%),
+        #0b1020;
+    }
+    
+    /* Card from quiz page */
+    .card{
+      backdrop-filter: blur(8px);
+      background: rgba(15,20,40,.55);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:24px;
+      box-shadow: 0 0 30px rgba(124,58,237,.25), 0 20px 60px rgba(0,0,0,.45);
+      padding:20px;
+      max-width: 980px;
+      width: 100%;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      margin: 0 0 15px;
+      font-weight: 700;
+    }
+    p {
+      font-size: clamp(1rem, 2.5vw, 1.2rem);
+      max-width: 90vw;
+      margin: 0 auto 20px;
+      line-height: 1.5;
+      opacity: 0.9;
+    }
+    
+    /* Link-like button from quiz page */
+    .link-btn{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding:12px 20px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.2);
+      background:rgba(255,255,255,.06);
+      color: var(--text);
+      cursor:pointer;
+      font-weight:700;
+      font-family: 'Cormorant Garamond', serif;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      margin-top: 15px;
+    }
+    .link-btn:hover{
+      background: rgba(255,255,255,.1);
+      box-shadow: 0 0 12px rgba(124,58,237,.4);
+    }
+
+    /* Countdown style matching quiz timer bubble */
+    #countdown-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 20px;
+      gap: 10px;
+    }
+    .countdown-label {
+      font-size: 1rem;
+      opacity: 0.8;
+      font-weight: 400;
+    }
+    #countdown-bubble {
+      font-size: 1.2rem;
+      font-weight: bold;
+      background: radial-gradient(circle at 30% 25%, rgba(255,255,255,.2), rgba(255,255,255,.05));
+      box-shadow: inset 0 0 12px rgba(255,255,255,.15), 0 0 20px rgba(124,58,237,.2);
+      padding: 12px 20px;
+      border-radius: 999px;
+      display: inline-block;
+      min-width: 180px;
+    }
+
+    /* Magical Sparkle Animation */
+    #sparkle-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>The Magic Awaits, My Love ✨</h1>
+    <p>Laado, our magical adventure continues, and today's gift marks the fifth chapter on our countdown to your 23rd birthday. Just as a new spell reveals new magic, this little page is filled with a simple incantation of my love for you. May it bring a smile to the young witch inside you, the one who finds joy in games and wonders. With every passing day, I am reminded of the light you bring into my world. All my love, now and always ✨</p>
+    
+    <a href="./main.html" class="link-btn">Open Your Next Gift 🎉</a>
+
+    <div id="countdown-wrapper">
+      <div class="countdown-label">⏳ Countdown to Your Birthday 💜</div>
+      <div id="countdown-bubble"></div>
+    </div>
+  </div>
+
+  <audio id="bg-music" autoplay loop>
+    <source src="https://cdn.pixabay.com/download/audio/2023/01/03/audio_4c8a556df9.mp3?filename=romantic-background-music-13284.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- Container for the animated sparkles -->
+  <canvas id="sparkle-canvas"></canvas>
+
+  <script>
+    const SETTINGS = {
+      BACKGROUND_IMAGE_URL: "BACKGROUND_IMAGE.jpg",
+      BACKGROUND_MUSIC_URL: "index_bg.mp3",
+      CORRECT_SOUND_URL: "",
+      WRONG_SOUND_URL: ""
+    };
+    
+    // Check for custom assets and apply them
+    (function applyCustomAssets(){
+      const bodyEl = document.body;
+      const audioEl = document.getElementById('bg-music');
+
+      // Apply custom background image if provided
+      if(SETTINGS.BACKGROUND_IMAGE_URL){
+        bodyEl.style.setProperty('--bg-image', `url('${SETTINGS.BACKGROUND_IMAGE_URL}')`);
+        bodyEl.classList.add('custom-bg');
+      } else {
+        bodyEl.classList.remove('custom-bg');
+      }
+
+      // Apply custom background music if provided
+      if(SETTINGS.BACKGROUND_MUSIC_URL && audioEl){
+        audioEl.src = SETTINGS.BACKGROUND_MUSIC_URL;
+        audioEl.load();
+        audioEl.play().catch(()=>{});
+      }
+    })();
+
+    // Countdown Script (to 26 Sept 2025)
+    const targetDate = new Date("Sep 26, 2025 00:00:00").getTime();
+    const timer = setInterval(function() {
+      const now = new Date().getTime();
+      const distance = targetDate - now;
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      document.getElementById("countdown-bubble").innerHTML =
+        days + "d " + hours + "h " + minutes + "m " + seconds + "s ";
+
+      if (distance < 0) {
+        clearInterval(timer);
+        document.getElementById("countdown-bubble").innerHTML =
+          "🎉 It’s Your Birthday, Ishita! 💜🎂";
+      }
+    }, 1000);
+
+    // Magical Sparkle Animation
+    const canvas = document.getElementById('sparkle-canvas');
+    const ctx = canvas.getContext('2d');
+    let W = window.innerWidth;
+    let H = window.innerHeight;
+    canvas.width = W;
+    canvas.height = H;
+
+    const sparkles = [];
+    const sparkleCount = 80;
+
+    const colors = [
+      '#f8fafc', // White
+      '#a78bfa', // Light violet
+      '#f472b6', // Pink
+      '#ffdf00'  // Gold
+    ];
+
+    function createSparkle() {
+      return {
+        x: Math.random() * W,
+        y: Math.random() * H,
+        size: Math.random() * 2 + 1,
+        speedX: (Math.random() - 0.5) * 0.5,
+        speedY: (Math.random() - 0.5) * 0.5,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        opacity: 0,
+        fadeSpeed: Math.random() * 0.02 + 0.005,
+        isFadingIn: true
+      };
+    }
+
+    for (let i = 0; i < sparkleCount; i++) {
+      sparkles.push(createSparkle());
+    }
+
+    function drawSparkles() {
+      ctx.clearRect(0, 0, W, H);
+      for (let i = 0; i < sparkleCount; i++) {
+        const s = sparkles[i];
+        
+        ctx.fillStyle = s.color;
+        ctx.globalAlpha = s.opacity;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Update position
+        s.x += s.speedX;
+        s.y += s.speedY;
+
+        // Bounce off walls
+        if (s.x < 0 || s.x > W) s.speedX *= -1;
+        if (s.y < 0 || s.y > H) s.speedY *= -1;
+
+        // Fade in and out
+        if (s.isFadingIn) {
+          s.opacity += s.fadeSpeed;
+          if (s.opacity >= 1) s.isFadingIn = false;
+        } else {
+          s.opacity -= s.fadeSpeed;
+          if (s.opacity <= 0) {
+            // Reset position when it fades out
+            sparkles[i] = createSparkle();
+          }
+        }
+      }
+    }
+
+    setInterval(drawSparkles, 20);
+
+    window.addEventListener("resize", () => {
+      W = window.innerWidth;
+      H = window.innerHeight;
+      canvas.width = W;
+      canvas.height = H;
+    });
+  </script>
+</body>
+</html>

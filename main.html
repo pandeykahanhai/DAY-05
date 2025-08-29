@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DAY - 05</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --primary:#7c3aed; /* purple */
+      --accent:#f472b6;  /* pink */
+      --glow:#a78bfa;    /* light violet */
+      --bg-star:#0b1020;
+      --text:#f8fafc;
+      --wrong:#ef4444;
+      --right:#22c55e;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family: ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,"Helvetica Neue",Arial, "Apple Color Emoji","Segoe UI Emoji"; font-family: 'Cormorant Garamond', serif; 
+      color:var(--text);
+      overflow:hidden; /* keeps the star field tight */
+      background:
+        radial-gradient(1000px 400px at 50% 120%, rgba(124,58,237,.15), transparent 60%),
+        radial-gradient(800px 300px at 0% 0%, rgba(244,114,182,.12), transparent 60%),
+        radial-gradient(700px 400px at 100% 0%, rgba(80,200,255,.12), transparent 60%),
+        #0b1020;
+      background-size:cover;
+      position:relative;
+    }
+    /* Optional custom background image (set via JS) */
+    body.custom-bg{
+      background: var(--bg-image) center/cover no-repeat fixed,
+        radial-gradient(1000px 400px at 50% 120%, rgba(124,58,237,.15), transparent 60%),
+        radial-gradient(800px 300px at 0% 0%, rgba(244,114,182,.12), transparent 60%),
+        radial-gradient(700px 400px at 100% 0%, rgba(80,200,255,.12), transparent 60%),
+        #0b1020;
+    }
+
+    .container{max-width:980px;margin:0 auto;padding:24px;height:100%;display:flex;flex-direction:column;gap:16px}
+
+    /* Card */
+    .card {
+  backdrop-filter: blur(8px);
+  background: rgba(15,20,40,.55);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 24px;
+  box-shadow: 0 0 30px rgba(124,58,237,.25), 0 20px 60px rgba(0,0,0,.45); /* <-- The new line */
+  padding: 20px;
+    }
+
+    .star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 0 6px 1px var(--glow);
+  opacity: 0;
+  animation: twinkle 2s ease-in-out infinite;
+}
+@keyframes twinkle {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+    
+    /* Header: Title + Wand Power */
+    .header {
+  display: flex;
+  flex-direction: column; /* Stack items vertically */
+  align-items: center;    /* Center them horizontally */
+  gap: 16px;
+}
+    .title {
+  font-size: clamp(20px,4vw,32px);
+  font-weight: 800;
+  letter-spacing: .5px;
+  text-align: center; /* Ensure title text is centered */
+}
+
+    /* Power bar */
+    .bar{
+  position: relative;
+  height: 14px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.08);
+  overflow: hidden;
+  flex: 1;
+}
+    .bar>span{
+  position: absolute;
+  inset: 0 100% 0 0;
+  background: linear-gradient(90deg,var(--primary),var(--accent));
+  box-shadow: 0 0 36px 12px var(--glow), inset 0 0 12px rgba(255,255,255,.25); /* The glowing effect */
+  transition: inset .5s ease;
+}
+    .bar-wrap{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 55%;
+}
+.header-stats {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  width: 100%; /* Ensure it fills the full width */
+}
+    .bar-label{
+  font-size: 12px;
+  opacity: .9;
+}
+
+    /* Timer */
+    .timer{display:flex;align-items:center;gap:10px}
+    .timer .bubble{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 30% 25%, rgba(255,255,255,.2), rgba(255,255,255,.05));box-shadow: inset 0 0 12px rgba(255,255,255,.15), 0 0 20px rgba(124,58,237,.2); font-weight:800}
+    .timer .label{font-size:12px;opacity:.8}
+
+    /* Screens */
+    .screen{display:none}
+    .screen.active{display:block}
+
+    /* Question */
+    .q-wrap{display:flex;flex-direction:column;gap:18px}
+    .q-text{font-size:clamp(18px,3.2vw,28px);line-height:1.2;font-weight:700}
+    .choices{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .btn{border:none;border-radius:14px;padding:14px 16px;background:rgba(255,255,255,.08);color:var(--text);font-weight:600;cursor:pointer;transition:.2s; text-align:left}
+    .btn:hover {transform: translateY(-1px); /* Your original effect */background: rgba(255,255,255,.12); /* Your original effect */box-shadow: 0 0 12px var(--glow); /* The new glowing effect */ }
+    .btn.correct{background:rgba(34,197,94,.15); border:1px solid rgba(34,197,94,.4)}
+    .btn.wrong{background:rgba(239,68,68,.14); border:1px solid rgba(239,68,68,.35)}
+    .btn:disabled{opacity:.7;cursor:not-allowed}
+
+    .actions{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+    .ghost{background:transparent;border:1px dashed rgba(255,255,255,.25)}
+
+    /* Wand area */
+    .wand-stage{position:relative;flex:1;display:grid;place-items:center;min-height:220px}
+    .wand-wrapper{position:relative;transform: rotate(-12deg);}
+    .wand-glow{position:absolute;inset:-30% -40%;filter:blur(24px);opacity:.35;pointer-events:none}
+
+    /* Sparkles */
+    .sparkle{position:absolute; width:6px;height:6px; border-radius:50%; background: white; opacity:0; pointer-events:none}
+    @keyframes fly{ from{transform:translate(0,0) scale(.6); opacity:1} to{transform:translate(var(--dx), var(--dy)) scale(1.6); opacity:0} }
+
+    /* Footer note */
+    .note{font-size:12px;opacity:.7;text-align:center;margin-top:6px}
+
+    .center{display:grid;place-items:center;text-align:center}
+
+    /* Link-like button */
+    .link-btn{display:inline-flex;align-items:center;gap:10px;padding:12px 16px;border-radius:999px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);cursor:pointer;font-weight:700}
+    .link-btn:hover {
+  background: rgba(255,255,255,.1); /* Your original effect */
+  box-shadow: 0 0 12px rgba(124,58,237,.4); /* The new glowing effect */
+}
+
+    @media (max-width:640px){
+      .choices{grid-template-columns:1fr}
+      .bar-wrap{width:100%}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- HEADER -->
+    <div class="card header">
+  <div class="title"> Wizarding World Quiz ⚡ </div>
+  <div class="header-stats">
+    <div class="bar-wrap">
+      <div class="bar-label">Wand Power</div>
+      <div class="bar" aria-label="Wand power"><span id="powerFill"></span></div>
+    </div>
+    <div class="timer">
+      <div class="label">Time</div>
+      <div class="bubble" id="timer">60</div>
+    </div>
+  </div>
+</div>
+
+    <!-- START SCREEN -->
+    <section id="start" class="card screen active center">
+      <div>
+        <h1 style="font-size:clamp(26px,5vw,40px);margin:4px 0 10px">Laado, are you ready for some magic? ✨</h1>
+        <p style="opacity:.85;max-width:700px;margin:0 auto 20px">Answer beginner‑friendly Harry Potter questions. Every correct answer charges Harry’s wand. Fill it to the brim to unlock a special message 💜</p>
+        <button class="link-btn" id="startBtn">Start the Quiz</button>
+        <div class="note">Each question has a 60‑second timer.
+          <br/>Tip: You can mute/unmute sounds anytime.
+        </div>
+      </div>
+    </section>
+
+    <!-- QUIZ SCREEN -->
+    <section id="quiz" class="card screen">
+      <div class="q-wrap">
+        <div class="q-text" id="qText">Question goes here…</div>
+        <div class="choices" id="choices"></div>
+        <div class="actions">
+          <button class="btn ghost" id="muteBtn" aria-pressed="false">🔊 Sound: On</button>
+          <button class="btn" id="nextBtn" disabled>Next ➜</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- WAND + RESULT -->
+    <section id="result" class="card screen center">
+      <div>
+        <div class="wand-stage" aria-hidden="true">
+          <div class="wand-wrapper" id="wandWrapper">
+            <!-- Inline SVG wand (auto-glows with power) -->
+            <svg id="wandSVG" width="280" height="80" viewBox="0 0 280 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- handle -->
+              <rect x="10" y="30" width="90" height="14" rx="7" fill="#3b2f2f"/>
+              <rect x="100" y="34" width="130" height="6" rx="3" fill="#5b4636"/>
+              <!-- tip -->
+              <circle id="wandTip" cx="236" cy="37" r="6" fill="#d9d2ff"/>
+            </svg>
+            <div class="wand-glow" id="wandGlow"></div>
+          </div>
+          <div id="sparkles"></div>
+        </div>
+        <h2 id="resultTitle" style="font-size:clamp(22px,4.5vw,34px);margin:10px 0 6px">Brilliant! 💖</h2>
+        <p id="resultMsg" style="opacity:.9;max-width:800px;margin:0 auto 12px">You powered up Harry’s wand with your answers. Just like you power up my life, Ishita. Always, always you. ❤️</p>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:8px">
+          <button class="link-btn" onclick="restart()">Play Again</button>
+          <button class="link-btn" id="shareBtn">Share Result</button>
+        </div>
+        <div class="note">Score: <span id="finalScore">0</span>/<span id="totalQ">0</span></div>
+      </div>
+    </section>
+
+    <!-- WAND STAGE shown during quiz too -->
+    <div class="card wand-stage" id="liveWand" style="min-height:160px">
+      <div class="wand-wrapper">
+        <svg width="240" height="70" viewBox="0 0 280 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="10" y="30" width="90" height="14" rx="7" fill="#3b2f2f"/>
+          <rect x="100" y="34" width="130" height="6" rx="3" fill="#5b4636"/>
+          <circle id="wandTipLive" cx="236" cy="37" r="6" fill="#d9d2ff"/>
+        </svg>
+        <div class="wand-glow" id="wandGlowLive"></div>
+      </div>
+      <div id="sparklesLive"></div>
+    </div>
+
+  </div>
+
+  <!-- ======= AUDIO (WebAudio fallback + optional custom files) ======= -->
+  <!--
+    HOW TO USE YOUR OWN SOUNDS/IMAGES
+    ---------------------------------
+    1) Put your files in the same folder as this HTML (or host them online).
+    2) In the SETTINGS object below, set:
+         BACKGROUND_IMAGE_URL: "bg.jpg" (or https://...)
+         WAND_IMAGE_URL: "wand.png" (replaces SVG)
+         BACKGROUND_MUSIC_URL: "bg-music.mp3" (looped)
+         CORRECT_SOUND_URL: "correct.mp3"
+         WRONG_SOUND_URL: "wrong.mp3"
+    3) Save the file and refresh. That’s it!
+  -->
+  <script>
+    const SETTINGS = {
+      BACKGROUND_IMAGE_URL: "BACKGROUND_IMAGE.jpg", // e.g. "hogwarts-night.jpg"
+      WAND_IMAGE_URL: "",       // optional, replaces the inline SVG wand
+      BACKGROUND_MUSIC_URL: "bg-music.mp3", // optional background music (loop)
+      CORRECT_SOUND_URL: "",    // optional custom correct sound
+      WRONG_SOUND_URL: ""       // optional custom wrong sound
+    };
+
+    /* -------------------- QUESTIONS (edit freely) -------------------- */
+    const QUESTIONS = [
+      { q: "What is Harry Potter’s pet owl’s name?", choices:["Hedwig","Crookshanks","Scabbers","Errol"], answer:0 },
+      { q: "Which house at Hogwarts does Harry belong to?", choices:["Gryffindor","Ravenclaw","Hufflepuff","Slytherin"], answer:0 },
+      { q: "What shape is Harry’s scar?", choices:["Star","Lightning bolt","Circle","Wand"], answer:1 },
+      { q: "Who is Harry’s best friend?", choices:["Ron","Draco","Dudley","Neville"], answer:0 },
+      { q: "What sport is played on broomsticks?", choices:["Quidditch","Gobstones","Exploding Snap","Wizard Chess"], answer:0 },
+      { q: "Which platform takes you to Hogwarts?", choices:["10¾","9¾","11½","7¾"], answer:1 },
+      { q: "Who is headmaster when Harry arrives at Hogwarts?", choices:["Snape","McGonagall","Dumbledore","Moody"], answer:2 },
+      { q: "What’s the name of the wizarding bank?", choices:["Florean’s","Gringotts","Honeydukes","Ollivanders"], answer:1 },
+      { q: "What are non-magical people called?", choices:["Muggles","Squibs","Ghosts","Elves"], answer:0 },
+      { q: "What’s the school Harry attends?", choices:["Ilvermorny","Beauxbatons","Durmstrang","Hogwarts"], answer:3 }
+    ];
+
+    /* -------------------- STATE -------------------- */
+    let idx=0, score=0, timer=null, timeLeft=60, muted=false;
+
+    /* -------------------- DOM -------------------- */
+    const startEl = document.getElementById('start');
+    const quizEl  = document.getElementById('quiz');
+    const resultEl= document.getElementById('result');
+    const qText   = document.getElementById('qText');
+    const choices = document.getElementById('choices');
+    const nextBtn = document.getElementById('nextBtn');
+    const timerEl = document.getElementById('timer');
+    const powerFill = document.getElementById('powerFill');
+    const muteBtn = document.getElementById('muteBtn');
+
+    const wandTipLive = document.getElementById('wandTipLive');
+    const wandGlowLive = document.getElementById('wandGlowLive');
+    const sparklesLive = document.getElementById('sparklesLive');
+
+    const wandTip = document.getElementById('wandTip');
+    const wandGlow = document.getElementById('wandGlow');
+    const sparkles = document.getElementById('sparkles');
+    const finalScore = document.getElementById('finalScore');
+    const totalQ = document.getElementById('totalQ');
+
+    /* -------------------- OPTIONAL CUSTOM ASSETS -------------------- */
+    (function applyCustomAssets(){
+      if(SETTINGS.BACKGROUND_IMAGE_URL){
+        document.body.style.setProperty('--bg-image', `url('${SETTINGS.BACKGROUND_IMAGE_URL}')`);
+        document.body.classList.add('custom-bg');
+      }
+      // Optional background music
+      if(SETTINGS.BACKGROUND_MUSIC_URL){
+        const bg = new Audio(SETTINGS.BACKGROUND_MUSIC_URL);
+        bg.loop = true; bg.volume=.25;
+        document.addEventListener('click', ()=>{ if(!muted) bg.play().catch(()=>{}); }, {once:true});
+        window.__bgMusic = bg;
+      }
+    })();
+
+    /* -------------------- AUDIO (WebAudio fallback) -------------------- */
+    let audioCtx = null;
+    function ensureCtx(){ if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }
+
+    function playBeep(freq=880, duration=120){
+      if(muted) return;
+      if(SETTINGS.CORRECT_SOUND_URL || SETTINGS.WRONG_SOUND_URL) return; // external files handle playback
+      try{ ensureCtx(); const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+        o.type='sine'; o.frequency.value=freq; o.connect(g); g.connect(audioCtx.destination);
+        g.gain.value=.001; // start quiet for pop-free
+        const now = audioCtx.currentTime; g.gain.exponentialRampToValueAtTime(.15, now+.01);
+        o.start(); g.gain.exponentialRampToValueAtTime(.0001, now + (duration/1000)); o.stop(now + (duration/1000)+.02);
+      }catch(e){}
+    }
+
+    function playCorrect(){
+      if(muted) return;
+      if(SETTINGS.CORRECT_SOUND_URL){ new Audio(SETTINGS.CORRECT_SOUND_URL).play().catch(()=>{}); return; }
+      playBeep(940,160);
+    }
+    function playWrong(){
+      if(muted) return;
+      if(SETTINGS.WRONG_SOUND_URL){ new Audio(SETTINGS.WRONG_SOUND_URL).play().catch(()=>{}); return; }
+      playBeep(220,240);
+    }
+
+    /* -------------------- QUIZ LOGIC -------------------- */
+    function setScreen(id){
+      for(const el of document.querySelectorAll('.screen')) el.classList.remove('active');
+      document.getElementById(id).classList.add('active');
+    }
+
+    function start(){
+      idx=0; score=0; updatePower();
+      totalQ.textContent = QUESTIONS.length;
+      setScreen('quiz');
+      renderQ();
+      // kick bg music if provided
+      if(window.__bgMusic && !muted){ window.__bgMusic.play().catch(()=>{}); }
+    }
+
+    function renderQ(){
+      const {q, choices:chs} = QUESTIONS[idx];
+      qText.textContent = `Q${idx+1}. ${q}`;
+      choices.innerHTML = '';
+      nextBtn.disabled = true;
+      chs.forEach((c,i)=>{
+        const btn = document.createElement('button');
+        btn.className = 'btn';
+        btn.textContent = c;
+        btn.onclick = ()=> select(i, btn);
+        choices.appendChild(btn);
+      });
+      resetTimer();
+    }
+
+    function select(i, btn){
+      stopTimer();
+      const correctIndex = QUESTIONS[idx].answer;
+      const btns = [...choices.children];
+      btns.forEach(b=>b.disabled=true);
+      if(i===correctIndex){
+        score++; btn.classList.add('correct');
+        playCorrect();
+        sparkleBurst(true);
+      }else{
+        btn.classList.add('wrong');
+        btns[correctIndex].classList.add('correct');
+        playWrong();
+        sparkleBurst(false);
+      }
+      updatePower();
+      nextBtn.disabled=false;
+    }
+
+    function next(){
+      idx++;
+      if(idx>=QUESTIONS.length){
+        showResult();
+      }else{
+        renderQ();
+      }
+    }
+
+    function showResult(){
+      setScreen('result');
+      finalScore.textContent = score;
+      totalQ.textContent = QUESTIONS.length;
+      // Big glow + sparkles
+      updateWandGlow(wandGlow, score/QUESTIONS.length);
+      sparkleBurst(true, sparkles, 40);
+      // Share button
+      const shareBtn = document.getElementById('shareBtn');
+      shareBtn.onclick = async ()=>{
+        const text = `I scored ${score}/${QUESTIONS.length} on the Harry Potter Wand Quiz ✨`;
+        if(navigator.share){ try{ await navigator.share({text}); } catch(e){} }
+        else { navigator.clipboard.writeText(text); shareBtn.textContent='Copied!'; setTimeout(()=>shareBtn.textContent='Share Result',1500); }
+      };
+      // heartfelt message if full marks
+      const title = document.getElementById('resultTitle');
+      const msg = document.getElementById('resultMsg');
+      if(score===QUESTIONS.length){
+        title.textContent = 'Lumos Maxima! 💡';
+        msg.textContent = 'Perfect score, Ishita! The wand glows as bright as your smile. Thank you for being my magic.';
+      } else if(score >= Math.ceil(0.7*QUESTIONS.length)){
+        title.textContent = 'Brilliant! 💖';
+        msg.textContent = 'Your magic is strong, Laado. Together we light up everything.';
+      } else {
+        title.textContent = 'Magical Start ✨';
+        msg.textContent = 'Every spell begins with a whisper. With you, I’m learning new magic every day.';
+      }
+    }
+
+    function restart(){
+      setScreen('start');
+      document.getElementById('powerFill').style.inset = `0 100% 0 0`;
+      updateWandGlow(wandGlowLive, 0);
+      updateWandGlow(wandGlow, 0);
+    }
+
+    /* -------------------- TIMER -------------------- */
+    function resetTimer(){
+      timeLeft = 60; timerEl.textContent = timeLeft;
+      clearInterval(timer); timer = setInterval(()=>{
+        timeLeft--; timerEl.textContent = timeLeft;
+        if(timeLeft<=0){
+          clearInterval(timer); timeLeft=0; timerEl.textContent='0';
+          // auto mark as wrong, reveal correct
+          const correctIndex = QUESTIONS[idx].answer;
+          const btns = [...choices.children];
+          btns.forEach(b=>b.disabled=true);
+          btns[correctIndex].classList.add('correct');
+          playWrong(); sparkleBurst(false);
+          nextBtn.disabled=false; updatePower();
+        }
+      },1000);
+    }
+    function stopTimer(){ clearInterval(timer); }
+
+    /* -------------------- WAND POWER + FX -------------------- */
+    function updatePower(){
+      const pct = (score/QUESTIONS.length);
+      powerFill.style.inset = `0 ${Math.max(0,100 - pct*100)}% 0 0`;
+      // live glow scale with power
+      updateWandGlow(wandGlowLive, pct);
+      updateWandGlow(wandGlow, pct);
+    }
+
+    function updateWandGlow(glowEl, pct){
+      const intensity = Math.max(.1, pct*1.2);
+      glowEl.style.background = `radial-gradient(circle at 80% 40%, rgba(167,139,250,${.35+pct*.4}), transparent 40%),
+                                 radial-gradient(circle at 70% 50%, rgba(244,114,182,${.25+pct*.25}), transparent 50%)`;
+      glowEl.style.opacity = .25 + pct*.55;
+      glowEl.style.filter = `blur(${16 + pct*26}px)`;
+      const tip = glowEl===wandGlowLive? wandTipLive : wandTip;
+      if(tip){ tip.setAttribute('fill', pct>0.01? '#ffffff' : '#d9d2ff'); }
+    }
+
+    function sparkleBurst(isGood=true, container=sparklesLive, count=18){
+      for(let i=0;i<count;i++){
+        const s = document.createElement('div');
+        s.className='sparkle';
+        const dx = (Math.random()*120-60)+ 'px';
+        const dy = (isGood? -Math.random()*120 : Math.random()*60) + 'px';
+        s.style.setProperty('--dx', dx);
+        s.style.setProperty('--dy', dy);
+        s.style.left = (window.innerWidth/2 + (Math.random()*60-30)) + 'px';
+        s.style.top  = (isGood? 30 : 50) + '%';
+        s.style.animation = `fly ${450+Math.random()*400}ms ease-out forwards`;
+        container.appendChild(s);
+        setTimeout(()=> s.remove(), 900);
+      }
+    }
+
+    /* -------------------- EVENTS -------------------- */
+    document.getElementById('startBtn').onclick = ()=>{ setScreen('quiz'); start(); };
+    nextBtn.onclick = next;
+    muteBtn.onclick = ()=>{
+      muted = !muted; muteBtn.setAttribute('aria-pressed', String(muted));
+      muteBtn.textContent = muted? '🔇 Sound: Off' : '🔊 Sound: On';
+      if(window.__bgMusic){ if(muted) window.__bgMusic.pause(); else window.__bgMusic.play().catch(()=>{}); }
+    };
+
+    // Keyboard support
+    document.addEventListener('keydown', (e)=>{
+      if(e.key>='1' && e.key<='4' && quizEl.classList.contains('active')){
+        const i = parseInt(e.key,10)-1;
+        const btn = choices.children[i]; if(btn) btn.click();
+      }
+      if(e.key==='Enter' && !nextBtn.disabled) next();
+    });
+
+    // If a custom wand image is provided, swap SVG for IMG
+    (function maybeSwapWand(){
+      if(!SETTINGS.WAND_IMAGE_URL) return;
+      for(const id of ['liveWand','result']){
+        const host = document.getElementById(id).querySelector('.wand-wrapper');
+        if(!host) continue;
+        host.innerHTML = `<img src="${SETTINGS.WAND_IMAGE_URL}" alt="Wand" style="height:110px;filter: drop-shadow(0 0 18px rgba(167,139,250,.35)); transform: rotate(-12deg)"/>`;
+      }
+    })();
+    function createStar(){
+  const star = document.createElement('div');
+  star.className = 'star';
+  star.style.left = `${Math.random() * 100}%`;
+  star.style.top = `${Math.random() * 100}%`;
+  star.style.animationDuration = `${1 + Math.random()}s`;
+  document.body.appendChild(star);
+  setTimeout(() => star.remove(), 2000);
+}
+setInterval(createStar, 200); // Create a new star every 200ms
+  </script>
+</body>
+</html>
